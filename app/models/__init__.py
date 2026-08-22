@@ -1,1 +1,1 @@
-from app.models.models import Image, ImageMetadataRecord, Post, Suggestion, CostLog
+from app.models.models import Image, ImageMetadataRecord, Post, Suggestion, CostLog, PostVector, ImageVector

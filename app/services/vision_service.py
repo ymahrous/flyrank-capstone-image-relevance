@@ -1,5 +1,4 @@
 import os
-import json
 import google.generativeai as genai
 from app.schemas.metadata import ImageMetadata
 import logging
@@ -7,8 +6,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-# Using the model that works on your free tier
-model = genai.GenerativeModel('gemini-pro-vision')
+# UPDATED: Using the modern image model
+model = genai.GenerativeModel('gemini-2.5-flash-image')
 
 PROMPT = """
 Analyze this image and return a JSON object with exactly these fields:
@@ -21,9 +20,6 @@ Return ONLY valid JSON, no other text.
 """
 
 async def analyze_image(image_bytes: bytes) -> tuple[ImageMetadata | None, str]:
-    """
-    Returns a tuple: (Parsed_Metadata_or_None, raw_response_text)
-    """
     from google.generativeai import Image as GenImage
     
     img = GenImage.from_bytes(image_bytes)
@@ -46,5 +42,4 @@ async def analyze_image(image_bytes: bytes) -> tuple[ImageMetadata | None, str]:
         
     except Exception as e:
         logger.error(f"Vision parsing failed: {e}")
-        # Return the raw text so the job can log what went wrong
         return None, raw_text if 'raw_text' in locals() else str(e)

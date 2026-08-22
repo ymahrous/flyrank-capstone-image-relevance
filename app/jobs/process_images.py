@@ -11,13 +11,13 @@ from app.services.cost_service import log_cost
 logger = logging.getLogger(__name__)
 
 CONFIDENCE_THRESHOLD = 0.70
-MODEL_NAME = "gemini-pro-vision"
+# UPDATED: Changed model name here too
+MODEL_NAME = "gemini-2.5-flash-image"
 
 async def run_vision_batch_job(job_id: str):
     logger.info(f"Starting batch job {job_id}")
     
     async with AsyncSessionLocal() as db:
-        # 1. Get all images that are still pending (Idempotency check)
         result = await db.execute(select(Image).where(Image.status == "pending"))
         pending_images = result.scalars().all()
         
@@ -32,42 +32,33 @@ async def run_vision_batch_job(job_id: str):
                 await db.flush()
                 continue
 
-            # Read image bytes
             with open(filepath, "rb") as f:
                 image_bytes = f.read()
 
-            # Retry logic
             max_retries = 3
             metadata = None
             raw_response = ""
 
             for attempt in range(max_retries):
                 try:
-                    # Throttle: Free tier limits RPM, sleep to be safe
-                    await asyncio.sleep(2) 
-                    
+                    await asyncio.sleep(2) # Throttle for free tier
                     metadata, raw_response = await analyze_image(image_bytes)
-                    
                     if metadata:
-                        break # Success
+                        break
                         
                 except Exception as e:
                     logger.warning(f"Attempt {attempt + 1} failed for {img_record.filename}: {e}")
-                    await asyncio.sleep(2 ** attempt) # Exponential backoff
+                    await asyncio.sleep(2 ** attempt)
 
-            # Log cost regardless of success/failure
             await log_cost(db, job_id=job_id, call_type="vision", model=MODEL_NAME)
 
-            # 4. Handle Result
             if metadata:
-                # Low confidence check (The Guard's first line of defense)
                 if metadata.confidence < CONFIDENCE_THRESHOLD:
                     img_record.status = "flagged"
                     logger.warning(f"Flagged {img_record.filename} due to low confidence: {metadata.confidence}")
                 else:
                     img_record.status = "processed"
 
-                # Save metadata
                 meta_db = ImageMetadataRecord(
                     image_id=img_record.id,
                     subject=metadata.subject,
@@ -82,7 +73,6 @@ async def run_vision_batch_job(job_id: str):
                 img_record.status = "failed"
                 logger.error(f"Permanently failed {img_record.filename}. Raw: {raw_response[:100]}")
 
-            # Commit per image so progress is saved if job crashes
             await db.commit()
             
         logger.info(f"Batch job {job_id} finished.")
