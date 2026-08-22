@@ -1,0 +1,11 @@
+[
+  {"post_slug": "red-fox-behavior", "expected_image_id": "fox_01", "expect": "match"},
+  {"post_slug": "arctic-fox-habitat", "expected_image_id": "fox_05", "expect": "match"},
+  {"post_slug": "wolf-pack-dynamics", "expected_image_id": "wolf_02", "expect": "match"},
+  {"post_slug": "gray-wolf-conservation", "expected_image_id": "wolf_04", "expect": "match"},
+  {"post_slug": "labrador-retriever-care", "expected_image_id": "dog_01", "expect": "match"},
+  {"post_slug": "grizzly-bear-facts", "expected_image_id": "bear_01", "expect": "match"},
+  {"post_slug": "white-tailed-deer-diet", "expected_image_id": "deer_01", "expect": "match"},
+  {"post_slug": "quantum-computing-basics", "expected_image_id": null, "expect": "no_match"},
+  {"post_slug": "history-of-the-roman-empire", "expected_image_id": null, "expect": "no_match"}
+]
