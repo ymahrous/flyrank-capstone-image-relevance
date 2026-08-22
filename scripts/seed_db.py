@@ -2,6 +2,8 @@ import os
 import json
 import asyncio
 from dotenv import load_dotenv
+
+# MUST load .env before importing app.db
 load_dotenv()
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +11,11 @@ from app.db import AsyncSessionLocal
 from app.models import Image
 
 async def seed():
+    # Quick fail-safe check
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL is missing! Check your .env file.")
+
     with open("data/manifest.json", "r") as f:
         manifest = json.load(f)
 
