@@ -38,12 +38,12 @@ async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
     vec_record = PostVector(
         post_id=new_post.id,
         embedding=embedding,
-        model="text-embedding-004"
+        model="gemini-embedding-001"
     )
     db.add(vec_record)
     
     # 5. Log cost
-    await log_cost(db, job_id=f"post-{new_post.id}", call_type="embedding", model="text-embedding-004")
+    await log_cost(db, job_id=f"post-{new_post.id}", call_type="embedding", model="gemini-embedding-001")
     
     await db.commit()
     return {"id": new_post.id, "subject": metadata.subject, "status": "created"}

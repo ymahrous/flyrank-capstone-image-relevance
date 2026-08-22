@@ -19,3 +19,7 @@ images/
 *.jpg
 *.jpeg
 *.png
+
+# Tests
+.pytest_cache
+*.pytest_cache/

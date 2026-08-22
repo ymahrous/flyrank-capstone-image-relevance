@@ -34,10 +34,10 @@ async def run_image_embedding_job(job_id: str):
             vec_record = ImageVector(
                 image_id=img.id,
                 embedding=embedding,
-                model="text-embedding-004"
+                model="gemini-embedding-001"
             )
             db.add(vec_record)
-            await log_cost(db, job_id=job_id, call_type="embedding", model="text-embedding-004")
+            await log_cost(db, job_id=job_id, call_type="embedding", model="gemini-embedding-001")
             await db.commit()
             
             await asyncio.sleep(0.5) # Be polite to API

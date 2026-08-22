@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Gemini's free-tier embedding model
-EMBEDDING_MODEL = "models/text-embedding-004"
+EMBEDDING_MODEL = "models/gemini-embedding-001"
 
 async def get_embedding(text: str) -> list[float]:
     """Generates an embedding for a given text string."""

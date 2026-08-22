@@ -1,0 +1,12 @@
+run: "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+seed: "python -m scripts.seed_db && python -m scripts.migrate_add_vectors"
+test: "pytest"
+base_url: "http://localhost:8000"
+endpoints:
+  health: "/health"
+  trigger_vision: "POST /jobs/vision"
+  trigger_embeddings: "POST /jobs/embed-images"
+  create_post: "POST /posts/"
+  get_suggestions: "GET /matching/posts/{post_id}/images"
+  approve_suggestion: "POST /suggestions/{suggestion_id}/approve"
+  reject_suggestion: "POST /suggestions/{suggestion_id}/reject"
