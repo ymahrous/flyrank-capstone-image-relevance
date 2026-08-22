@@ -17,7 +17,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://neondb_owner:npg_9r5bWtxZAjCH@ep-cold-hall-ayauojl4-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+      DATABASE_URL: ${DATABASE_URL}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
     depends_on:
       - db
