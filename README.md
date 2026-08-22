@@ -1,7 +1,7 @@
 # FlyRank Capstone: AI Image Understanding & Content Matching Engine
 
 ## Evaluation Metrics
-**Top-1 Precision: [PASTE YOUR NUMBER HERE]%** (Measured via `python -m app.eval.run_eval` against a 9-pair labeled dataset).
+**Top-1 Precision:** (Measured via `python -m app.eval.run_eval` against a 9-pair labeled dataset).
 
 ## The Mission
 A backend system that looks at an image library, understands what's actually in each image, and matches the right image to the right blog post based on meaning, not filenames. 
@@ -40,7 +40,7 @@ GET /posts/:id/images
 ### Prerequisites
 - Python 3.11+
 - A free Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
-- A free Neon Postgres database
+- A local postgres database
 
 ### 1. Clone and Install
 ```bash
@@ -52,10 +52,9 @@ pip install -r requirements.txt
 ```
 
 ### 2. Configure Environment
-`cp .env.example .env`
 ```bash
-GEMINI_API_KEY=your_gemini_key_here
-DATABASE_URL=postgresql://postgres:password@localhost:5432/image_engine
+cp .env.example .env
+# Edit .env with your GEMINI_API_KEY and DATABASE_URL
 ```
 
 ### 3. Initialize Database & Seed
@@ -80,13 +79,21 @@ uvicorn app.main:app --reload
    ```
 4. **Get Suggestions:** `curl http://localhost:8000/matching/posts/1/images`
 
-## Running Tests & Eval
+### 6. Automated Demo & Eval
+To reset the database and run the full pipeline automatically:
+```bash
+python -m scripts.run_demo
+```
+
+To calculate the Top-1 Precision metric:
+```bash
+python -m app.eval.run_eval
+```
+
+## Running Tests
 ```bash
 # Run deterministic unit tests (Guard & API validation)
 pytest -v
-
-# Run the AI evaluation set to calculate Top-1 Precision
-python -m app.eval.run_eval
 ```
 
 ## Limitations & Honest Assumptions
@@ -94,3 +101,22 @@ python -m app.eval.run_eval
 - **Subject Extraction:** Post subjects are extracted via LLM. If the LLM hallucinates a highly obscure synonym not in our `SYNONYM_MAP`, the hard subject veto might falsely reject a good image.
 - **Throttling:** Vision jobs sleep for 2 seconds between calls to respect the free-tier RPM limit. This makes the batch job take ~2 minutes for 50 images.
 - **Embeddings:** Image embeddings are generated from the *text caption*, not the raw image pixels. This saves costs and complexity, but relies on the vision model's caption being highly accurate.
+
+## Project Structure
+```
+.
+├── app/
+│   ├── api/          # HTTP boundary (FastAPI routers)
+│   ├── services/     # Business logic (Vision, Embeddings, Guard)
+│   ├── repositories/ # Database access layer
+│   ├── jobs/         # Background batch workers
+│   ├── schemas/      # Pydantic models (Strict validation)
+│   ├── models/       # SQLAlchemy ORM models
+│   ├── eval/         # Evaluation dataset & runner
+│   └── db.py         # Async engine & session
+├── scripts/          # DB init, corpus download, demo runner
+├── tests/            # Pytest unit tests
+├── data/             # Image corpus & manifest
+├── capstone.yaml     # Automated evaluator config
+└── requirements.txt
+```

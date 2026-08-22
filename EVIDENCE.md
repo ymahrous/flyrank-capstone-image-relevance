@@ -1,4 +1,5 @@
 # Evidence Log
+*One pasted proof per Definition-of-Done checkbox.*
 
 ## Phase 0 - Walking Skeleton
 - [x] /health returns 200
@@ -51,6 +52,12 @@
 - [x] Review workflow (approve / reject) exists
   **PROOF:** [PASTE a curl transcript showing POST /suggestions/1/approve returning 200]
 - [x] Automated tests cover schema validation, mismatch rejection, and matching accuracy
-  **PROOF:** [PASTE the terminal output of `pytest -v` showing 6 passed]
+  **PROOF:** [PASTE the terminal output of `pytest -v` showing all tests passed]
 - [x] A small labeled evaluation dataset measures top-1 precision
   **PROOF:** [PASTE the terminal output of `python -m app.eval.run_eval` showing the final percentage]
+
+## Phase 5 - Demo Prep & Hardening
+- [x] Database can be wiped and re-seeded cleanly for demos
+  **PROOF:** [PASTE the terminal output of `python -m scripts.fresh_start` showing "Database wiped clean." and "Re-seeded 50 image records."]
+- [x] Automated demo sequence runs end-to-end without manual intervention
+  **PROOF:** [PASTE the final terminal output of `python -m scripts.run_demo` showing the "STARTING FLYRANK DEMO SEQUENCE", the Wolf Rejection step, the Quantum No-Match step, and the "DEMO SEQUENCE COMPLETE" messages.]
