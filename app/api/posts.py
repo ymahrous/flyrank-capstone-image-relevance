@@ -2,11 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from app.db import get_db
-from app.models import Post
+from app.models import Post, PostVector
 from app.services.post_service import extract_post_metadata
 from app.services.embedding_service import get_embedding
 from app.services.cost_service import log_cost
-import uuid
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
@@ -33,8 +32,8 @@ async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
     text_to_embed = f"{post.title} {post.content}"
     embedding = await get_embedding(text_to_embed)
     
-    # 4. Save embedding (storing as a simple list in Postgres for now)
-    from app.models import PostVector
+    # 4. Save embedding
+    # UPDATED: Changed model string here too
     vec_record = PostVector(
         post_id=new_post.id,
         embedding=embedding,

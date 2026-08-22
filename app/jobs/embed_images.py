@@ -9,6 +9,8 @@ from app.services.cost_service import log_cost
 
 logger = logging.getLogger(__name__)
 
+MODEL_NAME = "gemini-embedding-001"
+
 async def run_image_embedding_job(job_id: str):
     async with AsyncSessionLocal() as db:
         # Get all processed images that don't have an embedding yet
@@ -34,10 +36,10 @@ async def run_image_embedding_job(job_id: str):
             vec_record = ImageVector(
                 image_id=img.id,
                 embedding=embedding,
-                model="gemini-embedding-001"
+                model=MODEL_NAME
             )
             db.add(vec_record)
-            await log_cost(db, job_id=job_id, call_type="embedding", model="gemini-embedding-001")
+            await log_cost(db, job_id=job_id, call_type="embedding", model=MODEL_NAME)
             await db.commit()
             
             await asyncio.sleep(0.5) # Be polite to API
