@@ -1,13 +1,13 @@
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from app.schemas.metadata import ImageMetadata
 import logging
 
 logger = logging.getLogger(__name__)
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-# UPDATED: Using the modern image model
-model = genai.GenerativeModel('gemini-2.5-flash-image')
+# Initialize the modern client
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 PROMPT = """
 Analyze this image and return a JSON object with exactly these fields:
@@ -20,12 +20,13 @@ Return ONLY valid JSON, no other text.
 """
 
 async def analyze_image(image_bytes: bytes) -> tuple[ImageMetadata | None, str]:
-    from google.generativeai import Image as GenImage
-    
-    img = GenImage.from_bytes(image_bytes)
-    
     try:
-        response = await model.generate_content_async([PROMPT, img])
+        # Use the modern generate_content method
+        response = client.models.generate_content(
+            model='gemini-2.5-flash-preview-05-20',
+            contents=[PROMPT, types.Part.from_bytes(data=image_bytes, mime_type='image/jpeg')]
+        )
+        
         raw_text = response.text
         
         # Gemini sometimes wraps JSON in ```json ... ``` blocks. Strip it.

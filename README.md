@@ -1,7 +1,7 @@
 # FlyRank Capstone: AI Image Understanding & Content Matching Engine
 
 ## Evaluation Metrics
-**Top-1 Precision:** (Measured via `python -m app.eval.run_eval` against a 9-pair labeled dataset).
+**Top-1 Precision:** Measured via `python -m app.eval.run_eval` against a 9-pair labeled dataset.
 
 ## The Mission
 A backend system that looks at an image library, understands what's actually in each image, and matches the right image to the right blog post based on meaning, not filenames. 

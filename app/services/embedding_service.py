@@ -1,21 +1,20 @@
 import os
-import google.generativeai as genai
+from google import genai
 import logging
 
 logger = logging.getLogger(__name__)
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-# UPDATED: Using the correct model for your account
-EMBEDDING_MODEL = "models/gemini-embedding-001"
+# Initialize the modern client
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 async def get_embedding(text: str) -> list[float]:
     """Generates an embedding for a given text string."""
-    result = await genai.embed_content_async(
-        model=EMBEDDING_MODEL,
-        content=text,
-        task_type="SEMANTIC_SIMILARITY"
+    result = client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=text,
+        config=types.EmbedContentConfig(task_type="SEMANTIC_SIMILARITY")
     )
-    return result['embedding']
+    return result.embeddings[0].values
 
 def cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
     """Calculates cosine similarity between two vectors."""
@@ -30,3 +29,6 @@ def cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
         return 0.0
         
     return dot_product / (norm_a * norm_b)
+
+# Need to import types for the embed config
+from google.genai import types
