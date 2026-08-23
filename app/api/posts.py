@@ -15,10 +15,8 @@ class PostCreate(BaseModel):
 
 @router.post("/")
 async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
-    # 1. Extract subject using LLM
     metadata = await extract_post_metadata(post.content)
     
-    # 2. Create DB record
     new_post = Post(
         title=post.title,
         content=post.content,
@@ -26,14 +24,13 @@ async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
         category=metadata.category
     )
     db.add(new_post)
-    await db.flush() # Get the ID
+    await db.flush()
     
-    # 3. Generate embedding
     text_to_embed = f"{post.title} {post.content}"
-    embedding = await get_embedding(text_to_embed)
     
-    # 4. Save embedding
-    # UPDATED: Changed model string here too
+    # Removed 'await' here because get_embedding is no longer async
+    embedding = get_embedding(text_to_embed)
+    
     vec_record = PostVector(
         post_id=new_post.id,
         embedding=embedding,
@@ -41,7 +38,6 @@ async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
     )
     db.add(vec_record)
     
-    # 5. Log cost
     await log_cost(db, job_id=f"post-{new_post.id}", call_type="embedding", model="gemini-embedding-001")
     
     await db.commit()

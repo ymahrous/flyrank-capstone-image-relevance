@@ -1,5 +1,5 @@
 import os
-import google.genai as genai
+import google as genai
 from PIL import Image
 import io
 import requests

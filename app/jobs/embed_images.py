@@ -13,7 +13,6 @@ MODEL_NAME = "gemini-embedding-001"
 
 async def run_image_embedding_job(job_id: str):
     async with AsyncSessionLocal() as db:
-        # Get all processed images that don't have an embedding yet
         result = await db.execute(
             select(Image).join(ImageMetadataRecord, Image.id == ImageMetadataRecord.image_id)
             .where(Image.status == "processed")
@@ -23,16 +22,14 @@ async def run_image_embedding_job(job_id: str):
         logger.info(f"Found {len(images)} images to embed.")
         
         for img in images:
-            # Get the caption for this image
             meta_result = await db.execute(
                 select(ImageMetadataRecord).where(ImageMetadataRecord.image_id == img.id)
             )
             meta = meta_result.scalar_one()
             
-            # Embed the caption
-            embedding = await get_embedding(meta.caption)
+            # Removed 'await' here because get_embedding is no longer async
+            embedding = get_embedding(meta.caption)
             
-            # Save
             vec_record = ImageVector(
                 image_id=img.id,
                 embedding=embedding,
@@ -42,6 +39,6 @@ async def run_image_embedding_job(job_id: str):
             await log_cost(db, job_id=job_id, call_type="embedding", model=MODEL_NAME)
             await db.commit()
             
-            await asyncio.sleep(0.5) # Be polite to API
+            await asyncio.sleep(0.5)
             
         logger.info("Image embedding job finished.")

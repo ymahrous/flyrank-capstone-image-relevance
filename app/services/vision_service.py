@@ -1,4 +1,8 @@
 import os
+import base64
+from dotenv import load_dotenv
+load_dotenv()
+
 from google import genai
 from google.genai import types
 from app.schemas.metadata import ImageMetadata
@@ -6,8 +10,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Initialize the modern client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    raise ValueError("GEMINI_API_KEY is not set in .env file!")
+client = genai.Client(api_key=api_key)
 
 PROMPT = """
 Analyze this image and return a JSON object with exactly these fields:
@@ -20,27 +26,22 @@ Return ONLY valid JSON, no other text.
 """
 
 async def analyze_image(image_bytes: bytes) -> tuple[ImageMetadata | None, str]:
+    raw_text = ""
     try:
-        # Use the modern generate_content method
         response = client.models.generate_content(
-            model='gemini-2.5-flash-preview-05-20',
-            contents=[PROMPT, types.Part.from_bytes(data=image_bytes, mime_type='image/jpeg')]
+            model="gemini-2.5-flash",
+            contents=[
+                types.Part.from_text(text=PROMPT),
+                types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+            ]
         )
-        
-        raw_text = response.text
-        
-        # Gemini sometimes wraps JSON in ```json ... ``` blocks. Strip it.
-        cleaned_text = raw_text.strip()
-        if cleaned_text.startswith("```"):
-            cleaned_text = cleaned_text.split("\n", 1)[1]
-            if cleaned_text.endswith("```"):
-                cleaned_text = cleaned_text[:-3]
-                
-        # Strict Pydantic validation
-        metadata = ImageMetadata.model_validate_json(cleaned_text)
-        
+        raw_text = response.text.strip()
+        if "```json" in raw_text:
+            raw_text = raw_text.split("```json")[1].split("```")[0]
+        elif "```" in raw_text:
+            raw_text = raw_text.split("```")[1].split("```")[0]
+        metadata = ImageMetadata.model_validate_json(raw_text)
         return metadata, raw_text
-        
     except Exception as e:
         logger.error(f"Vision parsing failed: {e}")
-        return None, raw_text if 'raw_text' in locals() else str(e)
+        return None, raw_text or str(e)

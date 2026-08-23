@@ -37,7 +37,7 @@ async def ensure_post_exists(db: AsyncSession, title: str, content: str) -> int:
     
     # Generate and save embedding
     text_to_embed = f"{title} {content}"
-    embedding = await get_embedding(text_to_embed)
+    embedding = get_embedding(text_to_embed)
     
     vec_record = PostVector(
         post_id=new_post.id,
@@ -103,9 +103,16 @@ async def run_evaluation():
             scored.sort(key=lambda x: x["similarity"], reverse=True)
 
             # 4. Run guard on top candidate
+            # 4. Run guard on top candidate
             top = scored[0]
-            meta = (await db.execute(select(ImageMetadataRecord).where(ImageMetadataRecord.image_id == top["image_id"]))).scalar_one()
-            
+            meta = (await db.execute(
+                select(ImageMetadataRecord).where(ImageMetadataRecord.image_id == top["image_id"])
+            )).scalar_one()
+
+            # Fetch the actual post instance to get its subject value
+            post_result = await db.execute(select(Post).where(Post.id == post_id))
+            post = post_result.scalar_one()
+
             decision = evaluate_candidate(post.subject, meta.subject, top["similarity"], meta.confidence)
 
             # 5. Evaluate result

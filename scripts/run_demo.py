@@ -1,4 +1,3 @@
-cat << 'EOF' > scripts/run_demo.py
 import os
 import asyncio
 import requests

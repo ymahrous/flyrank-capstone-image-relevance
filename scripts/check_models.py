@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-import google.genai as genai
+import google as genai
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
